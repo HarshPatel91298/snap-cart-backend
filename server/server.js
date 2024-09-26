@@ -10,10 +10,12 @@ const { userSchema } = require('../schemas/userSchema');
 const { userResolver } = require('../resolvers/userResolver');
 const { brandSchema } = require('../schemas/brandSchema');
 const { brandResolver } = require('../resolvers/brandResolver');
+const { categorySchema } = require('../schemas/categorySchema');
+const { categoryResolver } = require('../resolvers/categoryResolver');
 
 // Merge the user schema and resolver
-const typeDefs = mergeTypeDefs([userSchema, brandSchema]);
-const resolvers = mergeResolvers([userResolver, brandResolver]);
+const typeDefs = mergeTypeDefs([userSchema, brandSchema, categorySchema]);
+const resolvers = mergeResolvers([userResolver, brandResolver, categoryResolver]);
 
 // Create a function to verify Firebase tokens
 const authenticateToken = async (token) => {
