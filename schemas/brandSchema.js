@@ -24,8 +24,9 @@ const brandSchema = gql`
     }
 
     type BrandResponse {
+        status: Boolean
         data: Brand
-        message: String
+        message: String!
     }
 
         
@@ -37,6 +38,7 @@ const brandSchema = gql`
         createBrand(newBrand: NewBrandInput!): BrandResponse!
         updateBrand(id: ID!, brandData: UpdateBrandInput!): BrandResponse!
         toggleBrandStatusById(id: ID!): BrandResponse!
+        deleteBrandById(id: ID!): BrandResponse!
     }
     `;
 

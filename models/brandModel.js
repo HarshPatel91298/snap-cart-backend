@@ -89,13 +89,17 @@ async function toggleBrandStatusById(id) {
 
 
 
-
-
 // Delete brand by ID
 async function deleteBrandById(id) {
     try {
-      // Find a brand by ID and delete
-      const deletedBrand = await Brand.findByIdAndDelete(id);
+      // Search for a brand by ID
+      const brand = await Brand.findById(id);
+      if (!brand) {
+        console.log("Brand not found");
+        return null;
+      }
+
+      const deletedBrand = await Brand.deleteOne({ _id : id });
       console.log("Brand deleted:", deletedBrand);
       return deletedBrand;
     }

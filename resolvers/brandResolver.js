@@ -16,9 +16,9 @@ const brandResolver = {
                 // Fetch a brand by ID
                 const brand = await Brand.getBrandById(id);
                 if (!brand) {
-                    return { data: null, message: "Brand not found" };
+                    return { status : false, data: null, message: "Brand not found" };
                 }
-                return { data: brand, message: "Brand found" };
+                return { status : true, data: brand, message: "Brand found" };
             } catch (error) {
                 throw new Error(error.message);
             }
@@ -29,7 +29,7 @@ const brandResolver = {
             try {
                 // Create a new brand
                 const newBrandData = await Brand.createBrand(newBrand);
-                return { data: newBrandData, message: "Brand created successfully" };
+                return { status : true, data: newBrandData, message: "Brand created successfully" };
             } catch (error) {
                 throw new Error(error.message);
             }
@@ -39,9 +39,9 @@ const brandResolver = {
                 // Update a brand by ID
                 const updatedBrand = await Brand.updateBrand(id, brandData);
                 if (!updatedBrand) {
-                    return { data: null, message: "Brand not found" };
+                    return { status : false, data: null, message: "Brand not found" };
                 }
-                return { data: updatedBrand, message: "Brand updated successfully" };
+                return { status : true, data: updatedBrand, message: "Brand updated successfully" };
             } catch (error) {
                 throw new Error(error.message);
             }
@@ -51,13 +51,25 @@ const brandResolver = {
                 // Archive a brand by ID
                 const updatedBrand = await Brand.toggleBrandStatusById(id);
                 if (!updatedBrand) {
-                    return { data: null, message: "Brand not found" };
+                    return { status : false, data: null, message: "Brand not found" };
                 }
-                return { data: updatedBrand, message: "Brand status updated successfully" };
+                return { status : true, data: updatedBrand, message: "Brand status updated successfully" };
             } catch (error) {
                 throw new Error(error.message);
             }
-        }
+        },
+        deleteBrandById: async (_, { id }) => {
+            try {
+                // Delete a brand by ID
+                const deletedBrand = await Brand.deleteBrandById(id);
+                if (!deletedBrand || (deletedBrand.hasOwnProperty("deletedCount") && deletedBrand.deletedCount === 0)) {
+                    return { status : false, data: null, message: "Brand not found" };
+                }
+                return { status : true, data: null, message: "Brand deleted successfully" };
+            } catch (error) {
+                throw new Error(error.message);
+            }
+        },
     },
 };
 

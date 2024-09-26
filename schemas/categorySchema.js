@@ -35,6 +35,7 @@ const categorySchema = gql`
 
     type Mutation {
         createCategory(newCategory: NewCategoryInput!): CategoryResponse!
+        categoryById(id: ID!): CategoryResponse!
         updateCategory(id: ID!, categoryData: UpdateCategoryInput!): CategoryResponse!
         toggleCategoryStatusById(id: ID!): CategoryResponse!
         deleteCategoryById(id: ID!): CategoryResponse!
