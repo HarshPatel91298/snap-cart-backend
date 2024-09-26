@@ -8,10 +8,12 @@ const { emailVerificationCron } = require('../cron/emailVerificationCron'); // E
 // Import the user schema and resolver
 const { userSchema } = require('../schemas/userSchema');
 const { userResolver } = require('../resolvers/userResolver');
+const { brandSchema } = require('../schemas/brandSchema');
+const { brandResolver } = require('../resolvers/brandResolver');
 
 // Merge the user schema and resolver
-const typeDefs = mergeTypeDefs([userSchema]);
-const resolvers = mergeResolvers([userResolver]);
+const typeDefs = mergeTypeDefs([userSchema, brandSchema]);
+const resolvers = mergeResolvers([userResolver, brandResolver]);
 
 // Create a function to verify Firebase tokens
 const authenticateToken = async (token) => {
