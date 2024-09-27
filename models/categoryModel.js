@@ -46,7 +46,6 @@ async function getCategoryById(id) {
     try {
         // Find a category by ID
         const category = await Category.findById(id);
-        console.log("Category found:", category);
         return category;
     }
     catch (error) {
