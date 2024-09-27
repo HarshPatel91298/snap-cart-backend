@@ -35,18 +35,18 @@ const userSchema = gql`
     emailVerified: Boolean
     phoneNumber: String
     }
-    
-    type Response {
+
+    type UserResponse {
         data: User
         message: String
-        }
-        
+    }
+    
     type Query {
-        userByEmail(email: String!): Response!
+        userByEmail(email: String!): UserResponse!
     }
   type Mutation {
-    createUser(newUser: NewUserInput!): Response!
-    updateUser(uid: String!, userData: UpdateUserInput!): Response!
+    createUser(newUser: NewUserInput!): UserResponse!
+    updateUser(uid: String!, userData: UpdateUserInput!): UserResponse!
   }
 `;
 
