@@ -8,10 +8,16 @@ const { emailVerificationCron } = require('../cron/emailVerificationCron'); // E
 // Import the user schema and resolver
 const { userSchema } = require('../schemas/userSchema');
 const { userResolver } = require('../resolvers/userResolver');
+const { brandSchema } = require('../schemas/brandSchema');
+const { brandResolver } = require('../resolvers/brandResolver');
+const { categorySchema } = require('../schemas/categorySchema');
+const { categoryResolver } = require('../resolvers/categoryResolver');
+const { subCategorySchema } = require('../schemas/subCategorySchema');
+const { subCategoryResolver } = require('../resolvers/subCategoryResolver');
 
 // Merge the user schema and resolver
-const typeDefs = mergeTypeDefs([userSchema]);
-const resolvers = mergeResolvers([userResolver]);
+const typeDefs = mergeTypeDefs([userSchema, brandSchema, categorySchema, subCategorySchema]);
+const resolvers = mergeResolvers([userResolver, brandResolver, categoryResolver, subCategoryResolver]);
 
 // Create a function to verify Firebase tokens
 const authenticateToken = async (token) => {
@@ -31,7 +37,7 @@ const server = new ApolloServer({
     const token = req.headers.authorization || null;
 
     // Log token for debugging purposes (remove or comment out in production)
-    console.log('Authorization Header:', token);
+    // console.log('Authorization Header:', token);
 
     // Remove 'Bearer ' from token string
 
