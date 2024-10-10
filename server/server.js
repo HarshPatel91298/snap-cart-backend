@@ -18,6 +18,12 @@ const { warehouseSchema } = require('../schemas/warehouseSchema')
 const { warehouseResolver } = require('../resolvers/warehouseResolver')
 const { stockLocationSchema } = require('../schemas/stockLocationSchema')
 const { stockLocationResolver } = require('../resolvers/stockLocationResolver')
+const { productSchema } = require('../schemas/productSchema')
+const { productResolver } = require('../resolvers/productResolver')
+const { addressSchema } = require('../schemas/addressSchema')
+const { addressResolver } = require('../resolvers/addressResolver')
+const { stockMgmtSchema } = require('../schemas/stockMgmtSchema')
+const { stockMgmtResolver } = require('../resolvers/stockMgmtResolver')
 
 // Merge all schemas and resolvers
 const typeDefs = mergeTypeDefs([
@@ -27,6 +33,10 @@ const typeDefs = mergeTypeDefs([
   subCategorySchema,
   warehouseSchema,
   stockLocationSchema, 
+  productSchema,
+  addressSchema,
+  stockMgmtSchema,
+
 ])
 
 const resolvers = mergeResolvers([
@@ -36,6 +46,9 @@ const resolvers = mergeResolvers([
   subCategoryResolver,
   warehouseResolver,
   stockLocationResolver,
+  productResolver,
+  addressResolver,
+  stockMgmtResolver,
 ])
 
 // Function to verify Firebase tokens
