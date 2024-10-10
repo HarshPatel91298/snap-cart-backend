@@ -14,6 +14,10 @@ const { categorySchema } = require('../schemas/categorySchema')
 const { categoryResolver } = require('../resolvers/categoryResolver')
 const { subCategorySchema } = require('../schemas/subCategorySchema')
 const { subCategoryResolver } = require('../resolvers/subCategoryResolver')
+const { warehouseSchema } = require('../schemas/warehouseSchema')
+const { warehouseResolver } = require('../resolvers/warehouseResolver')
+const { stockLocationSchema } = require('../schemas/stockLocationSchema')
+const { stockLocationResolver } = require('../resolvers/stockLocationResolver')
 const { productSchema } = require('../schemas/productSchema')
 const { productResolver } = require('../resolvers/productResolver')
 const { addressSchema } = require('../schemas/addressSchema')
@@ -27,9 +31,12 @@ const typeDefs = mergeTypeDefs([
   brandSchema,
   categorySchema,
   subCategorySchema,
+  warehouseSchema,
+  stockLocationSchema, 
   productSchema,
   addressSchema,
   stockMgmtSchema,
+
 ])
 
 const resolvers = mergeResolvers([
@@ -37,6 +44,8 @@ const resolvers = mergeResolvers([
   brandResolver,
   categoryResolver,
   subCategoryResolver,
+  warehouseResolver,
+  stockLocationResolver,
   productResolver,
   addressResolver,
   stockMgmtResolver,
