@@ -1,9 +1,10 @@
 const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
+const { ApolloServer, ApolloError } = require('apollo-server-express');
 const admin = require('../lib/firebaseAdmin'); // Firebase Admin SDK
 const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
 const { DBConnect } = require('./dbserver'); // Database connection
 const { emailVerificationCron } = require('../cron/emailVerificationCron'); // Email verification cron job
+const { isTokenExpired } = require('../lib/auth'); // Import the auth utility
 
 // Import the user schema and resolver
 const { userSchema } = require('../schemas/userSchema');
@@ -23,9 +24,13 @@ const resolvers = mergeResolvers([userResolver, brandResolver, categoryResolver,
 const authenticateToken = async (token) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
+    const isExpired = isTokenExpired(decodedToken);
+    if (isExpired) {
+      throw new ApolloError('Authentication Failed: Invalid or Expired Token', 'UNAUTHENTICATED');
+    }
     return decodedToken; // This is the authenticated user's data
   } catch (error) {
-    throw new Error('Authentication Failed: Invalid or Expired Token');
+    throw new ApolloError('Authentication Failed: Invalid or Expired Token', 'UNAUTHENTICATED');
   }
 };
 
@@ -35,29 +40,26 @@ const server = new ApolloServer({
   resolvers,
   context: async ({ req }) => {
     const token = req.headers.authorization || null;
-
-    // Log token for debugging purposes (remove or comment out in production)
-    // console.log('Authorization Header:', token);
-
-    // Remove 'Bearer ' from token string
-
+    console.log('Token:', token);
     if (!token) {
-      console.log("No token");
-      return { user: null }; // No user authenticated
-    } 
+      throw new ApolloError('Authentication Error: No token provided', 'UNAUTHENTICATED');
+    }
 
     const firebaseToken = token.replace('Bearer ', '');
 
+    if (!firebaseToken) {
+      throw new ApolloError('Authentication Error: Invalid token format', 'UNAUTHENTICATED');
+    }
+
     try {
-      if (firebaseToken) {
-        const user = await authenticateToken(firebaseToken);
-        return { user }; // Add user to context
-      } else {
-        return { user: null }; // No user authenticated
+      const user = await authenticateToken(firebaseToken);
+      if (!user) {
+        throw new ApolloError('User not found', 'UNAUTHENTICATED');
       }
+
+      return { user }; // Return user if authenticated
     } catch (error) {
-      // Handle authentication errors
-    //   throw new ApolloError('Authentication Error: ' + error.message, 'UNAUTHENTICATED');
+      throw new ApolloError('Authentication Error: ' + error.message, 'UNAUTHENTICATED');
     }
   },
 });
