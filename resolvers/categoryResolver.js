@@ -67,3 +67,4 @@ const categoryResolver = {
 };
 
 module.exports = { categoryResolver };
+
