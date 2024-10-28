@@ -71,11 +71,13 @@ const authenticateToken = async (token) => {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  introspection: true,
   context: async ({ req }) => {
     const token = req.headers.authorization || null;
     console.log('Token:', token);
     if (!token) {
-      throw new ApolloError('Authentication Error: No token provided', 'UNAUTHENTICATED');
+      // throw new ApolloError('Authentication Error: No token provided', 'UNAUTHENTICATED');
+      return { user: null }; // Return null if not authenticated
     }
 
     const firebaseToken = token.replace('Bearer ', '')
@@ -92,7 +94,8 @@ const server = new ApolloServer({
 
       return { user }; // Return user if authenticated
     } catch (error) {
-      throw new ApolloError('Authentication Error: ' + error.message, 'UNAUTHENTICATED');
+      // throw new ApolloError('Authentication Error: ' + error.message, 'UNAUTHENTICATED');
+      
     }
   },
 })
