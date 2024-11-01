@@ -1,5 +1,5 @@
 // warehouseSchema.js
-const { gql } = require('apollo-server-express')
+const { gql } = require("apollo-server-express");
 
 const warehouseSchema = gql`
   type Warehouse {
@@ -38,8 +38,8 @@ const warehouseSchema = gql`
     addWarehouse(warehouseInput: WarehouseInput): WarehouseResponse!
     updateWarehouse(id: ID!, warehouseInput: WarehouseInput): WarehouseResponse!
     deleteWarehouse(id: ID!): WarehouseResponse!
-    archiveWarehouse(id: ID!): WarehouseResponse!
+    toggleWarehouse(id: ID!): WarehouseResponse!
   }
-`
+`;
 
-module.exports = { warehouseSchema }
+module.exports = { warehouseSchema };

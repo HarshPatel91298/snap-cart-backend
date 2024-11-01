@@ -1,5 +1,5 @@
 // stockLocationSchema.js
-const { gql } = require('apollo-server-express')
+const { gql } = require("apollo-server-express");
 
 const stockLocationSchema = gql`
   type StockLocation {
@@ -50,8 +50,8 @@ const stockLocationSchema = gql`
       stockLocationInput: StockLocationInput
     ): StockLocationResponse!
     deleteStockLocation(id: ID!): StockLocationResponse!
-    archiveStockLocation(id: ID!): StockLocationResponse!
+    toggleStockLocation(id: ID!): StockLocationResponse!
   }
-`
+`;
 
-module.exports = { stockLocationSchema }
+module.exports = { stockLocationSchema };
