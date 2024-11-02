@@ -1,4 +1,4 @@
-const { gql } = require('apollo-server-express')
+const { gql } = require("apollo-server-express");
 
 const productSchema = gql`
   type Product {
@@ -67,6 +67,6 @@ const productSchema = gql`
     toggleProductStatusById(id: ID!): ProductResponse!
     deleteProduct(id: ID!): ProductResponse!
   }
-`
+`;
 
-module.exports = { productSchema }
+module.exports = { productSchema };

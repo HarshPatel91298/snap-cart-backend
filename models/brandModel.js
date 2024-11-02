@@ -15,10 +15,6 @@ async function createBrand(brandData) {
     try {
       // Create a new brand
 
-      // Add created date and updated date
-      brandData.createdAt = Date.now();
-      brandData.updatedAt = Date.now();
-
       const brand = new Brand(brandData);
       const newBrand = await brand.save();
       console.log("Brand created:", newBrand);
@@ -34,11 +30,10 @@ async function getBrands() {
     try {
       // Find all brands
       const brands = await Brand.find();
-      console.log("Brands found:", brands);
       return brands;
     }
     catch (error) {
-      console.error("Error finding brands:", error);
+      throw new Error(error.message);
     }
 }
 
@@ -47,11 +42,10 @@ async function getBrandById(id) {
     try {
       // Find a brand by ID
       const brand = await Brand.findById(id);
-      console.log("Brand found:", brand);
       return brand;
     }
     catch (error) {
-      console.error("Error finding brand:", error);
+      throw new Error(error.message);
     }
 }
 
@@ -65,7 +59,7 @@ async function updateBrand(id, brandData) {
       return updatedBrand;
     }
     catch (error) {
-      console.error("Error updating brand:", error);
+      throw new Error(error.message);
     }
 }
 
@@ -75,7 +69,6 @@ async function toggleBrandStatusById(id) {
         // Find a brand by ID and update the `is_active` status
         const currentBrand = await Brand.findById(id);
         const isActive = currentBrand.is_active;
-
         const updatedBrand = await Brand.findByIdAndUpdate(id, { is_active: !isActive }, { new: true });
 
         const status = isActive ? "activated" : "archived";
@@ -104,7 +97,7 @@ async function deleteBrandById(id) {
       return deletedBrand;
     }
     catch (error) {
-      console.error("Error deleting brand:", error);
+      throw new Error(error.message);
     }
 }
 
@@ -117,4 +110,4 @@ brandSchema.statics.toggleBrandStatusById = toggleBrandStatusById;
 
 
 const Brand = mongoose.model('Brand', brandSchema);
-module.exports = Brand;
+module.exports = {Brand};

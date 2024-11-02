@@ -10,9 +10,21 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   creationTime: { type: Date, default: Date.now },
   lastLoginAt: { type: Date, default: Date.now },
-  lastSignInTime: { type: Date, default: Date.now }
+  lastSignInTime: { type: Date, default: Date.now },
+  userRole: { type: String, required: true, default: 'user' }
 });
-
+// Get all users
+async function getUsers() {
+    try {
+      // Find all users
+      const users = await User.find();
+      console.log("Users found:", users);
+      return users;
+    }
+    catch (error) {
+      console.error("Error finding users:", error);
+    }
+}
 
 // Get User by Email
 async function getUserByEmail(email) {
@@ -21,6 +33,37 @@ async function getUserByEmail(email) {
       const user = await User.findOne({ email: email });
       console.log("User found:", user);
       return user;   
+    }
+    catch (error) {
+      console.error("Error finding user:", error);
+    }
+}
+
+// Get User by UID
+async function getUserByUID(uid) {
+    try {
+      // Find a user by UID
+      console.log(uid);
+      const user = await User.findOne({ firebaseUID: uid });
+      console.log(uid);
+      console.log("User found:", user);
+      return user;
+    }
+    catch (error) {
+      console.error("Error finding user:", error);
+    }
+}
+
+// Get User Role
+async function getUserRole(uid) {
+    try {
+      // Find a user by UID
+      const user = await User.findOne({ firebaseUID: uid });
+      console.log("Iiiiii")
+      if (!user) {
+        throw new Error("User not found");
+      }
+      return user.userRole;
     }
     catch (error) {
       console.error("Error finding user:", error);
@@ -41,8 +84,25 @@ async function updateUserByUID(uid, userData) {
       console.error("Error updating user:", error);
     }
 }
+
+// Delete User by UID
+async function deleteUserByUID(uid) {
+    try {
+      // Find a user by UID and delete
+      const deletedUser = await User.findOneAndDelete({ firebaseUID: uid });
+      console.log("User deleted:", deletedUser);
+      return deletedUser;
+    }
+    catch (error) {
+      console.error("Error deleting user:", error);
+    }
+}
+userSchema.statics.getUsers = getUsers;
 userSchema.statics.getUserByEmail = getUserByEmail;
 userSchema.statics.updateUserByUID = updateUserByUID;
+userSchema.statics.getUserByUID = getUserByUID;
+userSchema.statics.getUserRole = getUserRole;
+userSchema.statics.deleteUserByUID = deleteUserByUID;
 
 // Create a model from the schema
 const User = mongoose.model('User', userSchema);

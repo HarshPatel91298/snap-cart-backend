@@ -13,6 +13,7 @@ const userSchema = gql`
     creationTime: String!
     lastLoginAt: String!
     lastSignInTime: String!
+    userRole: String!
   }
 
   
@@ -34,19 +35,24 @@ const userSchema = gql`
     photoURL: String
     emailVerified: Boolean
     phoneNumber: String
+    email: String
     }
 
     type UserResponse {
+        status: Boolean!
         data: User
         message: String
     }
     
     type Query {
+        users: [User]
         userByEmail(email: String!): UserResponse!
+        userByUID(uid: String!): UserResponse!
     }
   type Mutation {
     createUser(newUser: NewUserInput!): UserResponse!
     updateUser(uid: String!, userData: UpdateUserInput!): UserResponse!
+    deleteUserById(uid: String!): UserResponse!
   }
 `;
 
