@@ -27,28 +27,10 @@ const { stockMgmtSchema } = require("../schemas/stockMgmtSchema");
 const { stockMgmtResolver } = require("../resolvers/stockMgmtResolver");
 const { cartSchema } = require("../schemas/cartSchema");
 const { cartResolver } = require("../resolvers/cartResolver");
-const { userSchema } = require('../schemas/userSchema')
-const { userResolver } = require('../resolvers/userResolver')
-const { brandSchema } = require('../schemas/brandSchema')
-const { brandResolver } = require('../resolvers/brandResolver')
-const { categorySchema } = require('../schemas/categorySchema')
-const { categoryResolver } = require('../resolvers/categoryResolver')
-const { subCategorySchema } = require('../schemas/subCategorySchema')
-const { subCategoryResolver } = require('../resolvers/subCategoryResolver')
-const { warehouseSchema } = require('../schemas/warehouseSchema')
-const { warehouseResolver } = require('../resolvers/warehouseResolver')
-const { stockLocationSchema } = require('../schemas/stockLocationSchema')
-const { stockLocationResolver } = require('../resolvers/stockLocationResolver')
-const { productSchema } = require('../schemas/productSchema')
-const { productResolver } = require('../resolvers/productResolver')
-const { addressSchema } = require('../schemas/addressSchema')
-const { addressResolver } = require('../resolvers/addressResolver')
-const { stockMgmtSchema } = require('../schemas/stockMgmtSchema')
-const { stockMgmtResolver } = require('../resolvers/stockMgmtResolver')
-const { orderSchema } = require('../schemas/orderSchema')
-const { orderResolver } = require('../resolvers/orderResolver')
-const { paymentSchema } = require('../schemas/paymentSchema')
-const { paymentResolver } = require('../resolvers/paymentResolver')
+const { orderSchema } = require('../schemas/orderSchema');
+const { orderResolver } = require('../resolvers/orderResolver');
+const { paymentSchema } = require('../schemas/paymentSchema');
+const { paymentResolver } = require('../resolvers/paymentResolver');
 
 // Merge all schemas and resolvers
 const typeDefs = mergeTypeDefs([
@@ -62,11 +44,11 @@ const typeDefs = mergeTypeDefs([
   addressSchema,
   stockMgmtSchema,
   cartSchema,
-]);
   orderSchema,
   paymentSchema,
+]);
+  
 
-])
 
 const resolvers = mergeResolvers([
   userResolver,
@@ -79,10 +61,10 @@ const resolvers = mergeResolvers([
   addressResolver,
   stockMgmtResolver,
   cartResolver,
-]);
   orderResolver,
   paymentResolver,
-])
+]);
+
 
 // Function to verify Firebase tokens
 const authenticateToken = async (token) => {
