@@ -1,83 +1,101 @@
-// stockMgmtResolver.js
-const StockMgmt = require('../models/stockMgmtModel')
+const StockMgmt = require("../models/stockMgmtModel");
+const { PERMISSIONS } = require("../lib/accessControl");
+const { ForbiddenError } = require("apollo-server-express");
+const { authenticateAndAuthorize } = require("../lib/auth");
 
 const stockMgmtResolver = {
   Query: {
-    getStock: async (_, { id }) => {
+    getStock: async (_, { id }, context) => {
+      const user = context.user;
+      await authenticateAndAuthorize(user, PERMISSIONS.READ, "stock");
+
       try {
-        const stock = await StockMgmt.findById(id)
+        const stock = await StockMgmt.findById(id);
         if (!stock) {
-          return { status: false, data: null, message: 'Stock not found' }
+          throw new ForbiddenError("Stock not found");
         }
         return {
           status: true,
           data: stock,
-          message: 'Stock retrieved successfully',
-        }
+          message: "Stock retrieved successfully",
+        };
       } catch (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
     },
-    listStock: async () => {
+    listStock: async (_, {}, context) => {
+      console.log(context);
+      const user = context.user;
+      await authenticateAndAuthorize(user, PERMISSIONS.READ, "stock");
+
       try {
-        const stocks = await StockMgmt.find()
+        const stocks = await StockMgmt.find();
         return {
           status: true,
           data: stocks,
-          message: 'Stock list retrieved successfully',
-        }
+          message: "Stock list retrieved successfully",
+        };
       } catch (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
     },
   },
   Mutation: {
-    addStock: async (_, { stockInput }) => {
+    addStock: async (_, { stockInput }, context) => {
+      const user = context.user;
+      await authenticateAndAuthorize(user, PERMISSIONS.WRITE, "stock");
+
       try {
-        const newStock = new StockMgmt(stockInput)
-        const stock = await newStock.save()
+        const newStock = new StockMgmt(stockInput);
+        const stock = await newStock.save();
         return {
           status: true,
           data: stock,
-          message: 'Stock added successfully',
-        }
+          message: "Stock added successfully",
+        };
       } catch (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
     },
-    updateStock: async (_, { id, stockInput }) => {
+    updateStock: async (_, { id, stockInput }, context) => {
+      const user = context.user;
+      await authenticateAndAuthorize(user, PERMISSIONS.WRITE, "stock");
+
       try {
         const stock = await StockMgmt.findByIdAndUpdate(id, stockInput, {
           new: true,
-        })
+        });
         if (!stock) {
-          return { status: false, data: null, message: 'Stock not found' }
+          throw new ForbiddenError("Stock not found");
         }
         return {
           status: true,
           data: stock,
-          message: 'Stock updated successfully',
-        }
+          message: "Stock updated successfully",
+        };
       } catch (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
     },
-    deleteStock: async (_, { id }) => {
+    deleteStock: async (_, { id }, context) => {
+      const user = context.user;
+      await authenticateAndAuthorize(user, PERMISSIONS.DELETE, "stock");
+
       try {
-        const stock = await StockMgmt.findByIdAndDelete(id)
+        const stock = await StockMgmt.findByIdAndDelete(id);
         if (!stock) {
-          return { status: false, data: null, message: 'Stock not found' }
+          throw new ForbiddenError("Stock not found");
         }
         return {
           status: true,
           data: null,
-          message: 'Stock deleted successfully',
-        }
+          message: "Stock deleted successfully",
+        };
       } catch (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
     },
   },
-}
+};
 
-module.exports = { stockMgmtResolver }
+module.exports = { stockMgmtResolver };
