@@ -56,7 +56,17 @@ const productSchema = gql`
   }
 
   type Query {
-    products: [Product!]!
+   products(
+      category_id: ID
+      sub_category_id: ID
+      brand_id: ID
+      sku: String
+      is_active: Boolean
+      price: Float
+      stock: Int
+      color: String
+      search: String
+    ): [Product!]!
     product(id: ID!): Product
     productCount: Int!
   }

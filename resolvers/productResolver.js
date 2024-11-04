@@ -1,17 +1,34 @@
-const Product = require("../models/productModel");
-const { PERMISSIONS } = require("../lib/accessControl");
-const { ForbiddenError } = require("apollo-server-express");
-const { authenticateAndAuthorize } = require("../lib/auth");
+const Product = require('../models/productModel')
+const { authenticateAndAuthorize } = require('../lib/auth'); // Import your auth utility
+const { PERMISSIONS } = require('../lib/accessControl'); 
+const { ForbiddenError } = require('apollo-server-express');
 
 const productResolver = {
   Query: {
-    products: async (_, __, context) => {
-      const user = context.user;
-      await authenticateAndAuthorize(user, PERMISSIONS.READ, "product");
-
+    products: async (_, { category_id, sub_category_id, brand_id, sku, is_active, price, stock, color, search }, context) => {
       try {
-        const products = await Product.find();
-        return products;
+        const user = context.user;
+        await authenticateAndAuthorize(user, PERMISSIONS.READ, 'product');
+        const query = {
+          ...(category_id && { category_id }),
+          ...(sub_category_id && { sub_category_id }),
+          ...(brand_id && { brand_id }),
+          ...(sku && { sku }),
+          ...(![null, undefined].includes(is_active) && { is_active }),
+          ...(price && { price: { $lte: price } }),
+          ...(stock && { stock: { $lte: stock } }),
+          ...(color && { color }),
+          ...(search && {
+            $or: [
+              { name: { $regex: search, $options: 'i' } },
+              { description: { $regex: search, $options: 'i' } },
+            ],
+          }),
+        }
+        console.log('query', query)
+        const products = await Product.find({ ...query})
+      
+        return products
       } catch (err) {
         throw new Error("Failed to retrieve products: " + err.message);
       }
