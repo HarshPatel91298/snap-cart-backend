@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const {Attachment} = require('./attachmentModel')
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -18,11 +19,13 @@ const productSchema = new mongoose.Schema({
     ref: 'SubCategory',
   },
   display_image: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Attachment',
   },
   images: [
     {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Attachment',
     },
   ],
   stock: { type: Number, required: true },

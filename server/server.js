@@ -31,6 +31,9 @@ const { orderSchema } = require('../schemas/orderSchema');
 const { orderResolver } = require('../resolvers/orderResolver');
 const { paymentSchema } = require('../schemas/paymentSchema');
 const { paymentResolver } = require('../resolvers/paymentResolver');
+const { attachmentSchema } = require("../schemas/attachmentSchema");
+const { attachmentResolver } = require("../resolvers/attachmentResolver");
+
 
 // Merge all schemas and resolvers
 const typeDefs = mergeTypeDefs([
@@ -46,6 +49,7 @@ const typeDefs = mergeTypeDefs([
   cartSchema,
   orderSchema,
   paymentSchema,
+  attachmentSchema,
 ]);
   
 
@@ -63,6 +67,7 @@ const resolvers = mergeResolvers([
   cartResolver,
   orderResolver,
   paymentResolver,
+  attachmentResolver,
 ]);
 
 
