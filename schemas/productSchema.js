@@ -10,8 +10,8 @@ const productSchema = gql`
     brand_id: ID
     category_id: ID
     sub_category_id: ID
-    display_image: String
-    images: [String]
+    display_image: ID 
+    images: [ID]
     stock: Int!
     sku: String
     is_active: Boolean!
@@ -27,12 +27,13 @@ const productSchema = gql`
     brand_id: ID
     category_id: ID
     sub_category_id: ID
-    display_image: String
-    images: [String]
+    display_image: ID
+    images: [ID]
     stock: Int!
     sku: String
     is_active: Boolean
   }
+
 
   input UpdateProductInput {
     name: String
@@ -42,8 +43,8 @@ const productSchema = gql`
     brand_id: ID
     category_id: ID
     sub_category_id: ID
-    display_image: String
-    images: [String]
+    display_image: ID
+    images: [ID]
     stock: Int
     sku: String
     is_active: Boolean
