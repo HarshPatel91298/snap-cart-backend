@@ -2,10 +2,12 @@ const Product = require('../models/productModel')
 const { authenticateAndAuthorize } = require('../lib/auth'); // Import your auth utility
 const { PERMISSIONS } = require('../lib/accessControl'); 
 const { ForbiddenError } = require('apollo-server-express');
+const { Attachment } = require('../models/attachmentModel');
+const admin = require('../lib/firebaseAdmin');
 
 const productResolver = {
   Query: {
-    products: async (_, { category_id, sub_category_id, brand_id, sku, is_active, price, stock, color, search }, context) => {
+    products: async (_, { category_id, sub_category_id, brand_id, sku, is_active, price, cost_price, color, search }, context) => {
       try {
         const user = context.user;
         await authenticateAndAuthorize(user, PERMISSIONS.READ, 'product');
@@ -16,7 +18,7 @@ const productResolver = {
           ...(sku && { sku }),
           ...(![null, undefined].includes(is_active) && { is_active }),
           ...(price && { price: { $lte: price } }),
-          ...(stock && { stock: { $lte: stock } }),
+          ...(cost_price && { cost_price: { $lte: cost_price } }),
           ...(color && { color }),
           ...(search && {
             $or: [
@@ -118,20 +120,48 @@ const productResolver = {
         throw new Error("Failed to toggle product status: " + error.message);
       }
     },
+    
+
     deleteProduct: async (_, { id }, context) => {
       const user = context.user;
       await authenticateAndAuthorize(user, PERMISSIONS.DELETE, "product");
-
+    
       try {
-        const deletedProduct = await Product.findByIdAndDelete(id);
-        if (!deletedProduct) {
+        // Fetch the product to get its attachments
+        const product = await Product.findById(id);
+        if (!product) {
           return { status: false, message: "Product not found" };
         }
-        return { status: true, message: "Product deleted successfully" };
+    
+        // Initialize Firebase Storage
+        const bucket = admin.storage().bucket();
+    
+        
+        // Delete all additional images from attachments and Firebase Storage
+        if (product.images && product.images.length > 0) {
+          const imageAttachments = await Attachment.find({ _id: { $in: product.images } });
+    
+          for (const image of imageAttachments) {
+            // Delete file from Firebase Storage
+            await bucket.file("images/" + image.name).delete().catch((error) => {
+              console.error(`Failed to delete image from Firebase: ${error.message}`);
+            });
+          }
+    
+          // Delete attachments from the database
+          await Attachment.deleteMany({ _id: { $in: product.images } });
+        }
+    
+        // Delete the product
+        await Product.findByIdAndDelete(id);
+    
+        return { status: true, message: "Product and related attachments deleted successfully from database and Firebase Storage" };
       } catch (err) {
         throw new Error("Failed to delete product: " + err.message);
       }
     },
+    
+    
   },
 };
 

@@ -4,6 +4,7 @@ const {Attachment} = require('./attachmentModel')
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
+  cost_price: { type: Number, required: true },
   price: { type: Number, required: true },
   color: { type: String },
   brand_id: {
@@ -28,7 +29,6 @@ const productSchema = new mongoose.Schema({
       ref: 'Attachment',
     },
   ],
-  stock: { type: Number, required: true },
   sku: {
     type: String,
     unique: true,
@@ -43,6 +43,8 @@ const productSchema = new mongoose.Schema({
     default: Date.now,
   },
 })
+
+
 
 const Product = mongoose.model('Product', productSchema)
 module.exports = Product
