@@ -5,6 +5,7 @@ const productSchema = gql`
     id: ID!
     name: String!
     description: String!
+    cost_price: Float!
     price: Float!
     color: String
     brand_id: ID
@@ -12,7 +13,6 @@ const productSchema = gql`
     sub_category_id: ID
     display_image: ID 
     images: [ID]
-    stock: Int!
     sku: String
     is_active: Boolean!
     created_at: String
@@ -22,6 +22,7 @@ const productSchema = gql`
   input NewProductInput {
     name: String!
     description: String!
+    cost_price: Float!
     price: Float!
     color: String
     brand_id: ID
@@ -29,7 +30,6 @@ const productSchema = gql`
     sub_category_id: ID
     display_image: ID
     images: [ID]
-    stock: Int!
     sku: String
     is_active: Boolean
   }
@@ -38,6 +38,7 @@ const productSchema = gql`
   input UpdateProductInput {
     name: String
     description: String
+    cost_price: Float
     price: Float
     color: String
     brand_id: ID
@@ -45,7 +46,6 @@ const productSchema = gql`
     sub_category_id: ID
     display_image: ID
     images: [ID]
-    stock: Int
     sku: String
     is_active: Boolean
   }
@@ -63,8 +63,8 @@ const productSchema = gql`
       brand_id: ID
       sku: String
       is_active: Boolean
+      cost_price: Float
       price: Float
-      stock: Int
       color: String
       search: String
     ): [Product!]!
