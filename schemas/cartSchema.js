@@ -5,7 +5,6 @@ const cartSchema = gql`
     id: ID!
     name: String
     price: Float
-    # Add other fields if needed
   }
 
   type CartItem {
@@ -25,6 +24,10 @@ const cartSchema = gql`
 
   input AddToCartInput {
     user_id: ID!
+    products: [ProductInput!]!
+  }
+
+  input ProductInput {
     product_id: ID!
     quantity: Int!
   }

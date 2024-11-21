@@ -7,11 +7,12 @@ const admin = require('../lib/firebaseAdmin');
 
 const productResolver = {
   Query: {
-    products: async (_, { category_id, sub_category_id, brand_id, sku, is_active, price, cost_price, color, search }, context) => {
+    products: async (_, { id, category_id, sub_category_id, brand_id, sku, is_active, price, cost_price, color, search }, context) => {
       try {
         const user = context.user;
         await authenticateAndAuthorize(user, PERMISSIONS.READ, 'product');
         const query = {
+          ...(id && { _id: id }),
           ...(category_id && { category_id }),
           ...(sub_category_id && { sub_category_id }),
           ...(brand_id && { brand_id }),
@@ -27,7 +28,6 @@ const productResolver = {
             ],
           }),
         }
-        console.log('query', query)
         const products = await Product.find({ ...query})
       
         return products

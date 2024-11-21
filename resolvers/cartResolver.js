@@ -8,6 +8,7 @@ const cartResolver = {
   Query: {
     cart: async (_, { user_id }, context) => {
       const user = context.user;
+      console.log("User ID %%:", user);
       await authenticateAndAuthorize(user, PERMISSIONS.READ, "cart");
 
       try {
@@ -30,45 +31,66 @@ const cartResolver = {
   },
   Mutation: {
     addToCart: async (_, { input }, context) => {
-      const { user_id, product_id, quantity } = input;
+      const { user_id, products } = input;
       const user = context.user;
       await authenticateAndAuthorize(user, PERMISSIONS.WRITE, "cart");
-
+    
       try {
         let cart = await Cart.findOne({ user_id });
-
-        // Ensure product exists
-        const product = await Product.findById(product_id);
-        if (!product) {
-          return { status: false, message: "Product not found" };
+    
+        // Ensure all products exist
+        const productDetails = await Product.find({
+          '_id': { $in: products.map(p => p.product_id) }
+        });
+        
+        // Create a lookup for the product details
+        const productLookup = productDetails.reduce((acc, product) => {
+          acc[product._id.toString()] = product;
+          return acc;
+        }, {});
+    
+        // Check if any product doesn't exist
+        const invalidProduct = products.find(p => !productLookup[p.product_id]);
+        if (invalidProduct) {
+          return { status: false, message: "One or more products not found" };
         }
-
+    
+        // Initialize the cart if not found
         if (!cart) {
           cart = new Cart({
             user_id,
-            products: [{ product_id, quantity }],
-            total_price: product.price * quantity,
+            products: [],
+            total_price: 0,
           });
-        } else {
+        }
+    
+        // Add products to the cart
+        products.forEach(({ product_id, quantity }) => {
+          const product = productLookup[product_id];
           const existingProductIndex = cart.products.findIndex(
             (p) => p.product_id.toString() === product_id
           );
+          const productTotal = product.price * quantity;
+    
           if (existingProductIndex > -1) {
+            // Update quantity if product exists
             cart.products[existingProductIndex].quantity += quantity;
+            cart.total_price += productTotal;
           } else {
+            // Add new product to the cart
             cart.products.push({ product_id, quantity });
+            cart.total_price += productTotal;
           }
-          cart.total_price += product.price * quantity;
-        }
-
+        });
+    
         await cart.save();
         return {
           status: true,
           data: cart,
-          message: "Product added to cart successfully",
+          message: "Products added to cart successfully",
         };
       } catch (err) {
-        throw new Error("Failed to add product to cart: " + err.message);
+        throw new Error("Failed to add products to cart: " + err.message);
       }
     },
     updateCartItem: async (_, { input }, context) => {
