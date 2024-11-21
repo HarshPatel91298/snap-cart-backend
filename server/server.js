@@ -33,6 +33,8 @@ const { paymentSchema } = require('../schemas/paymentSchema');
 const { paymentResolver } = require('../resolvers/paymentResolver');
 const { attachmentSchema } = require("../schemas/attachmentSchema");
 const { attachmentResolver } = require("../resolvers/attachmentResolver");
+const { couponSchema } = require("../schemas/couponSchema");
+const { couponResolver } = require("../resolvers/couponResolver");
 
 
 // Merge all schemas and resolvers
@@ -50,6 +52,7 @@ const typeDefs = mergeTypeDefs([
   orderSchema,
   paymentSchema,
   attachmentSchema,
+  couponSchema,
 ]);
   
 
@@ -68,6 +71,7 @@ const resolvers = mergeResolvers([
   orderResolver,
   paymentResolver,
   attachmentResolver,
+  couponResolver,
 ]);
 
 
@@ -101,11 +105,10 @@ const server = new ApolloServer({
     console.log("Token:", token);
     if (!token) {
       // throw new ApolloError('Authentication Error: No token provided', 'UNAUTHENTICATED');
-      return { user: null }; // Return null if not authenticated
+      return { user: { userRole: 'guest' }}; // Return empty user if not authenticated
     }
 
     const firebaseToken = token.replace("Bearer ", "");
-
     if (!firebaseToken) {
       throw new ApolloError(
         "Authentication Error: Invalid token format",

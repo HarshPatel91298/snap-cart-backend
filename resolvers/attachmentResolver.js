@@ -20,7 +20,7 @@ const attachmentResolver = {
         attachmentById: async (_, { id }, context) => {
             const user = context.user;
             await authenticateAndAuthorize(user, PERMISSIONS.READ, "attachment");
-
+            console.log("Attachment ID:", id);
             const attachment = await Attachment.findById(id);
             if (!attachment) {
                 throw new ForbiddenError("Attachment not found");

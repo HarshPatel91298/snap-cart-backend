@@ -58,6 +58,7 @@ const productSchema = gql`
 
   type Query {
    products(
+      id: ID
       category_id: ID
       sub_category_id: ID
       brand_id: ID
