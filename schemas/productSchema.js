@@ -71,6 +71,7 @@ const productSchema = gql`
     ): [Product!]!
     product(id: ID!): Product
     productCount: Int!
+    getRandomProducts(limit: Int!): [Product]
   }
 
   type Mutation {

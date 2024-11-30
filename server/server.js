@@ -5,6 +5,8 @@ const { mergeTypeDefs, mergeResolvers } = require("@graphql-tools/merge");
 const { DBConnect } = require("./dbserver"); // Database connection
 const { emailVerificationCron } = require("../cron/emailVerificationCron"); // Email verification cron job
 const { isTokenExpired } = require("../lib/auth"); // Import the auth utility
+const bodyParser = require('body-parser');
+
 
 // Import schemas and resolvers
 const { userSchema } = require("../schemas/userSchema");
@@ -122,6 +124,8 @@ const server = new ApolloServer({
         throw new ApolloError("User not found", "UNAUTHENTICATED");
       }
 
+      // console.log(" ___ Authenticated User: ____", user);
+
       return { user }; // Return user if authenticated
     } catch (error) {
       // throw new ApolloError('Authentication Error: ' + error.message, 'UNAUTHENTICATED');
@@ -131,9 +135,11 @@ const server = new ApolloServer({
 
 // Initialize Express App
 const app = express();
+app.use(bodyParser.json({ limit: '10mb' }));
 
 // Apply Apollo Server middleware to the Express app
-server.start().then(() => {
+server.start().then(async () => {
+  
   server.applyMiddleware({ app, path: "/graphql" }); // Set GraphQL endpoint
 
   // Start the Express server
