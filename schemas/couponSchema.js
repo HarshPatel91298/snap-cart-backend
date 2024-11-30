@@ -18,10 +18,11 @@ type Coupon {
   max_use_per_user: Int
   used_count: Int
   active: Boolean!
-  user_usage: [UserCouponUsage]  # New field to track coupon usage per user
+  applicable_global: Boolean!  # New boolean field
+  is_valid: String!  # New computed field: Active, Expiry in X days, Expired
+  user_usage: [UserCouponUsage]
 }
 
-# New type to track user-specific coupon usage
 type UserCouponUsage {
   userId: ID!
   usage_count: Int!
@@ -47,8 +48,8 @@ input CreateCouponInput {
   usage_limit: Int
   max_use_per_user: Int
   active: Boolean!
+  applicable_global: Boolean!
 }
-
 
 input UpdateCouponInput {
   description: String
@@ -63,9 +64,10 @@ input UpdateCouponInput {
   applicable_subcategories: [ID]
   usage_limit: Int
   max_use_per_user: Int
+  active: Boolean
+  applicable_global: Boolean
 }
 
-# New Mutation to apply coupon to a user's cart
 type Mutation {
   createCoupon(input: CreateCouponInput!): Coupon!
   updateCoupon(id: ID!, input: UpdateCouponInput!): Coupon!
@@ -78,14 +80,12 @@ type Query {
   couponByCode(code: String!): Coupon
 }
 
-# Input for cart items
 input CartItemInput {
   productId: ID
   categoryId: ID
   subcategoryId: ID
 }
 
-# Response type for applyCoupon mutation
 type CouponApplyResponse {
   success: Boolean!
   discount: Float

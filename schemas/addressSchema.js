@@ -1,9 +1,9 @@
-// addressSchema.js
-const { gql } = require('apollo-server-express')
+const { gql } = require('apollo-server-express');
 
 const addressSchema = gql`
   type Address {
     id: ID!
+    userId: ID!
     name: String
     street: String!
     apartment: String
@@ -11,6 +11,7 @@ const addressSchema = gql`
     province: String!
     postalCode: String!
     country: String!
+    poBox: String
     phone: String
     isDefault: Boolean
     createdAt: String
@@ -24,7 +25,21 @@ const addressSchema = gql`
     city: String!
     province: String!
     postalCode: String!
-    country: String!
+    country: String
+    poBox: String
+    phone: String
+    isDefault: Boolean
+  }
+
+  input UpdateAddressInput {
+    name: String
+    street: String
+    apartment: String
+    city: String
+    province: String
+    postalCode: String
+    country: String
+    poBox: String
     phone: String
     isDefault: Boolean
   }
@@ -38,21 +53,21 @@ const addressSchema = gql`
   type AddressListResponse {
     status: Boolean!
     data: [Address]
+    totalCount: Int
     message: String
   }
 
   type Query {
-    addresses: AddressListResponse!
+    addresses(limit: Int, offset: Int): AddressListResponse!
     addressById(id: ID!): AddressResponse!
   }
 
   type Mutation {
     addAddress(addressInput: AddressInput): AddressResponse!
-    updateAddress(id: ID!, addressInput: AddressInput): AddressResponse!
+    updateAddress(id: ID!, addressInput: UpdateAddressInput): AddressResponse!
     deleteAddress(id: ID!): AddressResponse!
     toggleDefaultStatus(id: ID!): AddressResponse!
   }
-`
+`;
 
-module.exports = { addressSchema }
-
+module.exports = { addressSchema };

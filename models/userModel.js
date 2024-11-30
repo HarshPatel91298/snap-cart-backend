@@ -39,7 +39,7 @@ async function getUserByEmail(email) {
     }
 }
 
-// Get User by UID
+// Get User by UID of Firebase
 async function getUserByUID(uid) {
     try {
       // Find a user by UID
@@ -59,7 +59,6 @@ async function getUserRole(uid) {
     try {
       // Find a user by UID
       const user = await User.findOne({ firebaseUID: uid });
-      console.log("Iiiiii")
       if (!user) {
         throw new Error("User not found");
       }

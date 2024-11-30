@@ -6,19 +6,34 @@ const { authenticateAndAuthorize } = require("../lib/auth");
 
 const cartResolver = {
   Query: {
-    cart: async (_, { user_id }, context) => {
+    cart: async (_, {}, context) => {
       const user = context.user;
-      console.log("User ID %%:", user);
+    
+      // Check for user authentication and permissions
       await authenticateAndAuthorize(user, PERMISSIONS.READ, "cart");
-
+    
       try {
-        // Find the cart without populating product_id directly
-        const cart = await Cart.findOne({ user_id });
+        // Get the user_id from context.user
+        const user_id = user.db_id;
+    
+        // Find the cart for the given user
+        const cart = await Cart.findOne({ user_id , is_active: true });
+        // If no cart is found, return null
         if (!cart) {
-          throw new ForbiddenError("Cart not found");
+          console.log("Cart not found for user:", user_id);
+          return {
+            status: false,
+            message: "No active cart found",
+          }
         }
-        return cart;
+    
+        return {
+          status: true,
+          data: cart,
+          message: "Cart retrieved successfully",
+        }
       } catch (err) {
+        console.error("Error retrieving cart:", err);
         throw new Error("Failed to retrieve cart: " + err.message);
       }
     },
@@ -36,13 +51,13 @@ const cartResolver = {
       await authenticateAndAuthorize(user, PERMISSIONS.WRITE, "cart");
     
       try {
-        let cart = await Cart.findOne({ user_id });
+        let cart = await Cart.findOne({ user_id, is_active: true });
     
         // Ensure all products exist
         const productDetails = await Product.find({
-          '_id': { $in: products.map(p => p.product_id) }
+          _id: { $in: products.map((p) => p.product_id) },
         });
-        
+    
         // Create a lookup for the product details
         const productLookup = productDetails.reduce((acc, product) => {
           acc[product._id.toString()] = product;
@@ -50,7 +65,7 @@ const cartResolver = {
         }, {});
     
         // Check if any product doesn't exist
-        const invalidProduct = products.find(p => !productLookup[p.product_id]);
+        const invalidProduct = products.find((p) => !productLookup[p.product_id]);
         if (invalidProduct) {
           return { status: false, message: "One or more products not found" };
         }
@@ -60,30 +75,42 @@ const cartResolver = {
           cart = new Cart({
             user_id,
             products: [],
+            sub_total: 0,
+            tax: 0,
             total_price: 0,
           });
         }
     
-        // Add products to the cart
+        // Process products and calculate totals
         products.forEach(({ product_id, quantity }) => {
           const product = productLookup[product_id];
           const existingProductIndex = cart.products.findIndex(
             (p) => p.product_id.toString() === product_id
           );
-          const productTotal = product.price * quantity;
     
           if (existingProductIndex > -1) {
             // Update quantity if product exists
             cart.products[existingProductIndex].quantity += quantity;
-            cart.total_price += productTotal;
           } else {
             // Add new product to the cart
-            cart.products.push({ product_id, quantity });
-            cart.total_price += productTotal;
+            cart.products.push({ product_id, quantity, price: product.price });
           }
         });
+        
+        console.log("track 1");
+        // Recalculate sub_total, tax, and total_price
+        console.log("cart.products", cart.products);
+        cart.sub_total = cart.products.reduce(
+          (sum, item) => sum + item.quantity * item.price,
+          0
+        );
+
+        console.log("track 2");
+        cart.tax = cart.sub_total * 0.13; // 13% tax
+        cart.total_price = cart.sub_total + cart.tax;
     
         await cart.save();
+    
         return {
           status: true,
           data: cart,
@@ -93,6 +120,64 @@ const cartResolver = {
         throw new Error("Failed to add products to cart: " + err.message);
       }
     },
+    reduceCartItemQuantity: async (_, { user_id, product_id, quantity }, context) => {
+      const user = context.user;
+      await authenticateAndAuthorize(user, PERMISSIONS.WRITE, "cart");
+    
+      try {
+        // Find the user's active cart
+        const cart = await Cart.findOne({ user_id, is_active: true });
+        if (!cart) {
+          return { status: false, message: "Cart not found" };
+        }
+    
+        // Find the product in the cart
+        const itemIndex = cart.products.findIndex(
+          (p) => p.product_id.toString() === product_id
+        );
+        if (itemIndex === -1) {
+          return { status: false, message: "Product not found in cart" };
+        }
+    
+        // Find the product details to adjust the price
+        const product = await Product.findById(product_id);
+        if (!product) {
+          return { status: false, message: "Product not found" };
+        }
+    
+        // Check if reducing quantity is possible (can't reduce below 1)
+        if (cart.products[itemIndex].quantity <= quantity) {
+          return { status: false, message: "Cannot reduce quantity below 1" };
+        }
+    
+        // Reduce the quantity of the product in the cart
+        cart.products[itemIndex].quantity -= quantity;
+    
+        // Recalculate the subtotal
+        cart.sub_total = cart.products.reduce(
+          (sum, item) => sum + item.quantity * item.price,
+          0
+        );
+    
+        // Recalculate tax (13% of subtotal)
+        cart.tax = cart.sub_total * 0.13;
+    
+        // Recalculate total price
+        cart.total_price = cart.sub_total + cart.tax;
+    
+        // Save the updated cart
+        await cart.save();
+    
+        return {
+          status: true,
+          data: cart,
+          message: `Cart item quantity reduced by ${quantity}`,
+        };
+      } catch (err) {
+        throw new Error("Failed to reduce cart item quantity: " + err.message);
+      }
+    },
+    
     updateCartItem: async (_, { input }, context) => {
       const { user_id, product_id, quantity } = input;
 
@@ -133,30 +218,41 @@ const cartResolver = {
     removeCartItem: async (_, { user_id, product_id }, context) => {
       const user = context.user;
       await authenticateAndAuthorize(user, PERMISSIONS.DELETE, "cart");
-
+    
       try {
-        const cart = await Cart.findOne({ user_id });
+        // Find the active cart for the user
+        const cart = await Cart.findOne({ user_id, is_active: true });
         if (!cart) {
           return { status: false, message: "Cart not found" };
         }
-
+    
+        // Locate the product in the cart
         const itemIndex = cart.products.findIndex(
           (p) => p.product_id.toString() === product_id
         );
         if (itemIndex === -1) {
           return { status: false, message: "Product not found in cart" };
         }
-
-        const product = await Product.findById(product_id);
-        if (!product) {
-          return { status: false, message: "Product not found" };
-        }
-
+    
+        // Remove the product from the cart
         const removedItem = cart.products[itemIndex];
-        cart.total_price -= removedItem.quantity * product.price;
         cart.products.splice(itemIndex, 1);
-
+    
+        // Recalculate the subtotal
+        cart.sub_total = cart.products.reduce(
+          (sum, item) => sum + item.quantity * item.price,
+          0
+        );
+    
+        // Recalculate tax (13% of subtotal)
+        cart.tax = cart.sub_total * 0.13;
+    
+        // Recalculate total
+        cart.total_price = cart.sub_total + cart.tax;
+    
+        // Save the updated cart
         await cart.save();
+    
         return {
           status: true,
           data: cart,
@@ -166,6 +262,7 @@ const cartResolver = {
         throw new Error("Failed to remove cart item: " + err.message);
       }
     },
+    
     clearCart: async (_, { user_id }, context) => {
       const user = context.user;
       await authenticateAndAuthorize(user, PERMISSIONS.DELETE, "cart");
@@ -183,6 +280,36 @@ const cartResolver = {
         return { status: true, message: "Cart cleared successfully" };
       } catch (err) {
         throw new Error("Failed to clear cart: " + err.message);
+      }
+    },
+    closeCart: async (_, { user_id }, context) => {
+      const user = context.user;
+
+      // Authorize the user
+      await authenticateAndAuthorize(user, PERMISSIONS.WRITE, "cart");
+
+      try {
+        // Find the cart for the user
+        const cart = await Cart.findOne({ user_id });
+
+        if (!cart) {
+          return {
+            status: false,
+            message: "Cart not found",
+          };
+        }
+
+        // Update the cart's `is_active` field to false
+        cart.is_active = false;
+        await cart.save();
+
+        return {
+          status: true,
+          data: cart,
+          message: "Cart closed successfully",
+        };
+      } catch (err) {
+        throw new Error("Failed to close cart: " + err.message);
       }
     },
   },

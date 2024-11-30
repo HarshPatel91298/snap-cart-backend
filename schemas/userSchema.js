@@ -49,10 +49,23 @@ const userSchema = gql`
         userByEmail(email: String!): UserResponse!
         userByUID(uid: String!): UserResponse!
     }
+
+   input AdminCreationInput {
+      firstName: String!
+      lastName: String!
+      email: String!
+      phoneNumber: String!
+      binaryImage: String! # Assuming binary image is passed as a Base64 string
+    }
+
   type Mutation {
     createUser(newUser: NewUserInput!): UserResponse!
+    createAdminUser(adminData: AdminCreationInput!): UserResponse!
     updateUser(uid: String!, userData: UpdateUserInput!): UserResponse!
     deleteUserById(uid: String!): UserResponse!
+    makeAdmin(uid: String!): UserResponse!
+    removeAdmin(uid: String!): UserResponse!
+    makeUser(uid: String!): UserResponse!
   }
 `;
 

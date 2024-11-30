@@ -10,6 +10,8 @@ const productResolver = {
     products: async (_, { id, category_id, sub_category_id, brand_id, sku, is_active, price, cost_price, color, search }, context) => {
       try {
         const user = context.user;
+
+        console.log("RRR user", context);
         await authenticateAndAuthorize(user, PERMISSIONS.READ, 'product');
         const query = {
           ...(id && { _id: id }),
@@ -60,6 +62,18 @@ const productResolver = {
         throw new Error("Failed to retrieve product count: " + err.message);
       }
     },
+    getRandomProducts: async (_, { limit }, context) => {
+      const user = context.user;
+      console.log("RRR user", context);
+      await authenticateAndAuthorize(user, PERMISSIONS.READ, "product");
+
+      try {
+        const products = await Product.aggregate([{ $sample: { size: limit } }]);
+        return products;
+      } catch (err) {
+        throw new Error("Failed to retrieve random products: " + err.message);
+      }
+    }
   },
   Mutation: {
     addProduct: async (_, { newProduct }, context) => {

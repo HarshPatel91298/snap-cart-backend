@@ -3,7 +3,7 @@ const { gql } = require('apollo-server-express')
 const paymentSchema = gql`
 
     input ItemInput {
-        order_id: String!
+        cart_id: String!
     }
     
     type PaymentIntentResponse {
