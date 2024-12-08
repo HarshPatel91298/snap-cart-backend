@@ -1,33 +1,41 @@
 const { Order, OrderLine } = require('../models/orderModel');
 const Cart  = require('../models/cartModel');
 const { authenticateAndAuthorize } = require('../lib/auth'); // Import your auth utility
+const { PERMISSIONS } = require('../lib/accessControl');
 
 const orderResolver = {
   Query: {
     // Fetch orders with optional filters for user_id, created_at, or order_status
     getOrders: async (_, { created_at, order_status }, context) => {
-
+    
     if (!context.user) {
       throw new Error('Unauthorized access');
     }
+    const { user_id, role } = context.user;
 
     await authenticateAndAuthorize(context.user, PERMISSIONS.READ, 'order');
 
-      const filter = {};
-      if (user_id) filter.user_id = user_id;
-      if (created_at) filter.created_at = new Date(created_at);
-      if (order_status) filter.order_status = order_status;
+     const data = await Order.fetchOrders(user_id, role, created_at, order_status);
+
+
+     console.log('order data', data[0].orderLines[0]);
       return {
         status: true,
-        data: Order.find(filter).populate('orderLines'),
+        data: data,
         message: 'Orders retrieved successfully',
       }
     },
     // Fetch a single order by ID
-    getOrder: async (_, { id }) => {
+    getOrderByID: async (_, { order_id }, context) => {
+      console.log('context', context);
+      if (!context.user) {
+        throw new Error('Unauthorized access');
+      }
+      const { user_id, role } = context.user;
+      const order = await Order.fetchOrderById(user_id, role, order_id);
       return {
         status: true,
-        data: Order.findById(id).populate('orderLines'),
+        data: order,
         message: 'Order retrieved successfully',
       }
     }
@@ -50,11 +58,15 @@ const orderResolver = {
       if (!cart.is_active) {
         throw new Error('Cart is already inactive');
       }
+
+      // Generate a unique order number with date and some random characters
+      const order_number = `ORD-${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
     
       // Create an empty order first
       const emptyOrder = new Order({
         user_id: user.db_id,
         cart_id,
+        order_number,
         total_amount: 0, // Temporary value; we'll update this later
         payment_method,
         address_id,
@@ -85,7 +97,7 @@ const orderResolver = {
       await cart.save();
     
       // Return the final order with populated order lines
-      return Order.findById(savedOrder._id).populate('orderLines');
+      return Order.findById(savedOrder._id).populate('orderLines').populate('user_id', 'displayName email');
     },
     
 

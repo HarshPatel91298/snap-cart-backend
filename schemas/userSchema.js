@@ -48,6 +48,7 @@ const userSchema = gql`
         users: [User]
         userByEmail(email: String!): UserResponse!
         userByUID(uid: String!): UserResponse!
+        getAdmins: [User]
     }
 
    input AdminCreationInput {
@@ -55,7 +56,7 @@ const userSchema = gql`
       lastName: String!
       email: String!
       phoneNumber: String!
-      binaryImage: String! # Assuming binary image is passed as a Base64 string
+      binaryImage: String
     }
 
   type Mutation {

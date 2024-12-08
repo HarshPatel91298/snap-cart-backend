@@ -12,32 +12,32 @@ const generateRandomPassword = (length = 12) => {
     return crypto.randomBytes(length).toString('base64').slice(0, length);
   };
 
-const uploadImageToFirebase = async (binaryImage, imageName) => {
-    const bucket = admin.storage().bucket();
-    const file = bucket.file(imageName);
+// const uploadImageToFirebase = async (binaryImage, imageName) => {
+//     const bucket = admin.storage().bucket();
+//     const file = bucket.file(imageName);
     
-    const bufferStream = new Readable();
-    bufferStream.push(binaryImage);
-    bufferStream.push(null); // End the stream
+//     const bufferStream = new Readable();
+//     bufferStream.push(binaryImage);
+//     bufferStream.push(null); // End the stream
     
-    // Upload the image
-    await new Promise((resolve, reject) => {
-      const writeStream = file.createWriteStream({
-        metadata: {
-          contentType: 'image/jpeg', // Assuming the image is JPEG, you can adjust this based on actual image type
-        }
-      });
+//     // Upload the image
+//     await new Promise((resolve, reject) => {
+//       const writeStream = file.createWriteStream({
+//         metadata: {
+//           contentType: 'image/jpeg', // Assuming the image is JPEG, you can adjust this based on actual image type
+//         }
+//       });
       
-      bufferStream.pipe(writeStream);
+//       bufferStream.pipe(writeStream);
       
-      writeStream.on('finish', resolve);
-      writeStream.on('error', reject);
-    });
+//       writeStream.on('finish', resolve);
+//       writeStream.on('error', reject);
+//     });
     
-    // Get the file URL after upload
-    const fileUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
-    return fileUrl;
-  };
+//     // Get the file URL after upload
+//     const fileUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+//     return fileUrl;
+//   };
   
 
 const userResolver = {
@@ -68,6 +68,13 @@ const userResolver = {
             }
 
             return { status: true, message: "User found", data: userData };
+        },
+        getAdmins: async (_, __, context) => {
+            const user = context.user;
+            console.log("User", user);
+            await authenticateAndAuthorize(user, PERMISSIONS.READ, 'admin');
+
+            return await User.getAdmins();
         }
     },
     Mutation: {
@@ -93,16 +100,19 @@ const userResolver = {
 
             return { status: true, data: createdUser, message: "User created successfully" };
         },
-        createAdminUser: async (_, { adminData }) => {
+        createAdminUser: async (_, { adminData }, context) => {
             const { firstName, lastName, email, phoneNumber, binaryImage } = adminData;
       
             try {
               // 1. Generate a random password
               const password = generateRandomPassword();
+              console.log("Password : ", password)
       
-              // 2. Upload the binary image to Firebase Storage
-              const imageName = `${firstName}-${lastName}-${Date.now()}.jpg`; // Create a unique image name
-              const photoURL = await uploadImageToFirebase(binaryImage, imageName); // Get the URL after upload
+              // // 2. Upload the binary image to Firebase Storage
+              // const imageName = `${firstName}-${lastName}-${Date.now()}.jpg`; // Create a unique image name
+              // const photoURL = await uploadImageToFirebase(binaryImage, imageName); // Get the URL after upload
+
+              // console.log("Admin Profile Image : ", photoURL)
       
               // 3. Create a user in Firebase Authentication
               const firebaseUser = await admin.auth().createUser({
@@ -110,7 +120,7 @@ const userResolver = {
                 emailVerified: false,
                 phoneNumber,
                 displayName: `${firstName} ${lastName}`,
-                photoURL, // Use the photo URL from Firebase Storage
+                // photoURL, // Use the photo URL from Firebase Storage
                 password, // Set the generated password
               });
       
@@ -122,9 +132,10 @@ const userResolver = {
               const newUser = new User({
                 email,
                 displayName: `${firstName} ${lastName}`,
+                emailVerified : false,
                 firebaseUID,
                 phoneNumber,
-                photoURL, // Use the photo URL from Firebase Storage
+                // photoURL, // Use the photo URL from Firebase Storage
                 userRole: 'admin', // Role is set to admin
               });
       
@@ -146,7 +157,7 @@ const userResolver = {
                   email: newUser.email,
                   displayName: newUser.displayName,
                   firebaseUID: newUser.firebaseUID,
-                  photoURL: newUser.photoURL,
+                  // photoURL: newUser.photoURL,
                   emailVerified: false,
                   phoneNumber: newUser.phoneNumber,
                   createdAt: newUser.createdAt,
@@ -199,12 +210,12 @@ const userResolver = {
             }
     
             // Update the user's role to admin
-            targetUser.userRole = 'admin';
+            targetUser.userRole = 'superAdmin';
             await targetUser.save();
     
             // Update Firebase custom claims to reflect the admin role
             const claims = {
-                role: 'admin',
+                role: 'superAdmin',
                 db_id: targetUser._id,
             };
 

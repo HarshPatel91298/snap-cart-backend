@@ -120,6 +120,7 @@ const server = new ApolloServer({
 
     try {
       const user = await authenticateToken(firebaseToken);
+      console.log("Authenticated User: ", user);
       if (!user) {
         throw new ApolloError("User not found", "UNAUTHENTICATED");
       }
