@@ -1,6 +1,16 @@
 const { gql } = require('apollo-server-express');
 
+
+
 const orderSchema = gql`
+
+  type User {
+    id: ID!
+    email: String!
+    displayName: String!
+  }
+
+
   type OrderLine {
     id: ID!
     product_id: ID!
@@ -13,14 +23,15 @@ const orderSchema = gql`
 
   type Order {
     id: ID!
-    user_id: ID!
+    user_id: User! 
     cart_id: ID
+    order_number: String!
     order_status: String!
     order_date: String
     orderLines: [OrderLine] # Use the newly defined type here
     total_amount: Float!
     payment_method: String!
-    address_id: ID!
+    address_id: Address!
     created_at: String
     updated_at: String
   }
@@ -50,7 +61,7 @@ const orderSchema = gql`
 
   type Query {
     getOrders(created_at: String, order_status: String): OrderResponse
-    getOrder(id: ID!): SingleOrderResponse
+    getOrderByID(order_id: ID!): SingleOrderResponse
   }
 
   type Mutation {

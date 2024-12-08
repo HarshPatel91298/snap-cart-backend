@@ -44,7 +44,16 @@ const productSchema = new mongoose.Schema({
   },
 })
 
+async function fetchMultiProducts(ids) {
+  try {
+    const products = await this.find({ _id: { $in: ids } }).populate('display_image').populate('images');
+    return products;
+  } catch (error) {
+    throw new Error(error);
+  }
+}
 
+productSchema.statics.fetchMultiProducts = fetchMultiProducts;
 
 const Product = mongoose.model('Product', productSchema)
 module.exports = Product

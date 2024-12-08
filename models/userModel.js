@@ -26,6 +26,18 @@ async function getUsers() {
     }
 }
 
+async function getAdmins() {
+    try {
+      // Find all users
+      const users = await User.find({ userRole: 'admin' });
+      console.log("Admins found:", users);
+      return users;
+    }
+    catch (error) {
+      console.error("Error finding admins:", error);
+    }
+}
+
 // Get User by Email
 async function getUserByEmail(email) {
     try {
@@ -97,6 +109,7 @@ async function deleteUserByUID(uid) {
     }
 }
 userSchema.statics.getUsers = getUsers;
+userSchema.statics.getAdmins = getAdmins;
 userSchema.statics.getUserByEmail = getUserByEmail;
 userSchema.statics.updateUserByUID = updateUserByUID;
 userSchema.statics.getUserByUID = getUserByUID;

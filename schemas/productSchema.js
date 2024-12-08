@@ -56,6 +56,25 @@ const productSchema = gql`
     message: String!
   }
 
+  type ProductWithImages {
+    id: ID!
+    name: String!
+    description: String!
+    cost_price: Float!
+    price: Float!
+    color: String
+    brand_id: ID
+    category_id: ID
+    sub_category_id: ID
+    display_image: Attachment
+    images: [Attachment]
+    sku: String
+    is_active: Boolean!
+    created_at: String
+    updated_at: String
+  }
+
+
   type Query {
    products(
       id: ID
@@ -72,6 +91,7 @@ const productSchema = gql`
     product(id: ID!): Product
     productCount: Int!
     getRandomProducts(limit: Int!): [Product]
+    multiGetProducts(ids: [ID!]!): [ProductWithImages]
   }
 
   type Mutation {

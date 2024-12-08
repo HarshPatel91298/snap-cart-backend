@@ -73,6 +73,17 @@ const productResolver = {
       } catch (err) {
         throw new Error("Failed to retrieve random products: " + err.message);
       }
+    },
+    multiGetProducts: async (_, { ids }, context) => {
+      const user = context.user;
+      await authenticateAndAuthorize(user, PERMISSIONS.READ, "product");
+
+      try {
+        const products = await Product.fetchMultiProducts(ids);
+        return products;
+      } catch (err) {
+        throw new Error("Failed to retrieve products: " + err.message);
+      }
     }
   },
   Mutation: {
