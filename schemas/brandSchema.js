@@ -10,6 +10,16 @@ const brandSchema = gql`
         createdAt: String!
         updatedAt: String!
     }
+
+    type BrandsForResponse {
+        id: ID
+        name: String
+        description: String
+        is_active: Boolean
+        logoURL: String
+        createdAt: String
+        updatedAt: String
+    }
     
     input NewBrandInput {
         name: String!

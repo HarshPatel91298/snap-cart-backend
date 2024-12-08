@@ -1,76 +1,71 @@
-const Brand = require('../models/brandModel');
+const { Brand } = require('../models/brandModel');
+const { PERMISSIONS } = require('../lib/accessControl'); 
+const { ForbiddenError } = require('apollo-server-express');
+const { authenticateAndAuthorize } = require('../lib/auth'); // Import your auth utility
 
 const brandResolver = {
     Query: {
-        brands: async () => {
-            try {
-                // Fetch all brands
-                const brands = await Brand.getBrands();
-                return brands;
-            } catch (error) {
-                throw new Error(error.message);
-            }
+        brands: async (_, {}, context) => {
+            const user = context.user;
+            await authenticateAndAuthorize(user, PERMISSIONS.READ, 'brand');
+            return await Brand.getBrands();
         },
-        brandById: async (_, { id }) => {
-            try {
-                // Fetch a brand by ID
-                const brand = await Brand.getBrandById(id);
-                if (!brand) {
-                    return { status : false, data: null, message: "Brand not found" };
-                }
-                return { status : true, data: brand, message: "Brand found" };
-            } catch (error) {
-                throw new Error(error.message);
+        brandById: async (_, { id }, context) => {
+            const user = context.user;
+            await authenticateAndAuthorize(user, PERMISSIONS.READ, 'brand');
+
+            const brand = await Brand.getBrandById(id);
+            if (!brand) {
+                throw new ForbiddenError("Brand not found");
             }
+
+            return { status: true, data: brand, message: "Brand found" };
         },
     },
-    Mutation : {
-        createBrand: async (_, { newBrand }) => {
-            try {
-                // Create a new brand
-                const newBrandData = await Brand.createBrand(newBrand);
-                return { status : true, data: newBrandData, message: "Brand created successfully" };
-            } catch (error) {
-                throw new Error(error.message);
-            }
+    Mutation: {
+        createBrand: async (_, { newBrand }, context) => {
+            const user = context.user;
+            await authenticateAndAuthorize(user, PERMISSIONS.WRITE, 'brand');
+
+            console.log("track 1");
+
+            const createdBrand = await Brand.createBrand(newBrand);
+            return { status: true, data: createdBrand, message: "Brand created successfully" };
         },
-        updateBrand: async (_, { id, brandData }) => {
-            try {
-                // Update a brand by ID
-                const updatedBrand = await Brand.updateBrand(id, brandData);
-                if (!updatedBrand) {
-                    return { status : false, data: null, message: "Brand not found" };
-                }
-                return { status : true, data: updatedBrand, message: "Brand updated successfully" };
-            } catch (error) {
-                throw new Error(error.message);
+        updateBrand: async (_, { id, brandData }, context) => {
+            const user = context.user;
+            await authenticateAndAuthorize(user, PERMISSIONS.WRITE, 'brand');
+
+            const updatedBrand = await Brand.updateBrand(id, brandData);
+            if (!updatedBrand) {
+                throw new ForbiddenError("Brand not found");
             }
+
+            return { status: true, data: updatedBrand, message: "Brand updated successfully" };
         },
-        toggleBrandStatusById: async (_, { id }) => {
-            try {
-                // Archive a brand by ID
-                const updatedBrand = await Brand.toggleBrandStatusById(id);
-                if (!updatedBrand) {
-                    return { status : false, data: null, message: "Brand not found" };
-                }
-                return { status : true, data: updatedBrand, message: "Brand status updated successfully" };
-            } catch (error) {
-                throw new Error(error.message);
+        toggleBrandStatusById: async (_, { id }, context) => {
+            const user = context.user;
+            await authenticateAndAuthorize(user, PERMISSIONS.DELETE, 'brand');
+
+            const updatedBrand = await Brand.toggleBrandStatusById(id);
+            if (!updatedBrand) {
+                throw new ForbiddenError("Brand not found");
             }
+
+            return { status: true, data: updatedBrand, message: "Brand status updated successfully" };
         },
-        deleteBrandById: async (_, { id }) => {
-            try {
-                // Delete a brand by ID
-                const deletedBrand = await Brand.deleteBrandById(id);
-                if (!deletedBrand || (deletedBrand.hasOwnProperty("deletedCount") && deletedBrand.deletedCount === 0)) {
-                    return { status : false, data: null, message: "Brand not found" };
-                }
-                return { status : true, data: null, message: "Brand deleted successfully" };
-            } catch (error) {
-                throw new Error(error.message);
+        deleteBrandById: async (_, { id }, context) => {
+            const user = context.user;
+            await authenticateAndAuthorize(user, PERMISSIONS.DELETE, 'brand');
+
+            const deletedBrand = await Brand.deleteBrandById(id);
+            if (!deletedBrand || (deletedBrand.deletedCount === 0)) {
+                throw new ForbiddenError("Brand not found");
             }
+
+            return { status: true, data: null, message: "Brand deleted successfully" };
         },
     },
 };
 
-module.exports = {brandResolver};
+module.exports = { brandResolver };
