@@ -10,7 +10,7 @@ const stockMgmtResolver = {
       await authenticateAndAuthorize(user, PERMISSIONS.READ, "stock");
 
       try {
-        const stock = await StockMgmt.findById(id);
+        const stock = await StockMgmt.fetchStocks();
         if (!stock) {
           throw new ForbiddenError("Stock not found");
         }
@@ -24,12 +24,13 @@ const stockMgmtResolver = {
       }
     },
     listStock: async (_, {}, context) => {
-      console.log(context);
+      // console.log(context);
       const user = context.user;
       await authenticateAndAuthorize(user, PERMISSIONS.READ, "stock");
 
       try {
-        const stocks = await StockMgmt.find();
+        const stocks = await StockMgmt.fetchStocks();
+
         return {
           status: true,
           data: stocks,
@@ -46,11 +47,11 @@ const stockMgmtResolver = {
       await authenticateAndAuthorize(user, PERMISSIONS.WRITE, "stock");
 
       try {
-        const newStock = new StockMgmt(stockInput);
-        const stock = await newStock.save();
+        const newStock = await StockMgmt.createStock(stockInput);
+        console.log("Created stock", newStock);
         return {
           status: true,
-          data: stock,
+          data: newStock,
           message: "Stock added successfully",
         };
       } catch (error) {
@@ -62,12 +63,8 @@ const stockMgmtResolver = {
       await authenticateAndAuthorize(user, PERMISSIONS.WRITE, "stock");
 
       try {
-        const stock = await StockMgmt.findByIdAndUpdate(id, stockInput, {
-          new: true,
-        });
-        if (!stock) {
-          throw new ForbiddenError("Stock not found");
-        }
+        const stock = await StockMgmt.updateStock(id, stockInput);
+      
         return {
           status: true,
           data: stock,

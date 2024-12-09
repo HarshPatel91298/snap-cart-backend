@@ -4,9 +4,9 @@ const { gql } = require('apollo-server-express')
 const stockMgmtSchema = gql`
   type StockMgmt {
     id: ID!
-    product_id: ID!
-    warehouse_id: ID!
-    stock_location_id: ID!
+    product_id: Product!
+    warehouse_id: Warehouse!
+    stock_location_id: StockLocation!
     quantity: Int!
     createdAt: String
     updatedAt: String
